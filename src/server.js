@@ -1,9 +1,56 @@
+// Auto migrate on startup
+const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
+
+async function autoMigrate() {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(20) DEFAULT 'customer',
+        phone VARCHAR(20),
+        avatar_url TEXT,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    // Create admin if not exists
+    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin@12345', 10);
+    await pool.query(`
+      INSERT INTO users (name, email, password, role)
+      VALUES ($1, $2, $3, 'admin')
+      ON CONFLICT (email) DO NOTHING
+    `, [
+      process.env.ADMIN_NAME || 'Admin',
+      process.env.ADMIN_EMAIL || 'admin@mystore.com',
+      hash
+    ]);
+    console.log('✅ Auto migration done');
+    await pool.end();
+  } catch (err) {
+    console.error('Migration error:', err.message);
+  }
+}
+
+autoMigrate();
+
+
+
 require('dotenv').config();
 const express     = require('express');
 const cors        = require('cors');
 const rateLimit   = require('express-rate-limit');
 
 const app = express();
+
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors({
