@@ -19,7 +19,8 @@ router.put   ('/products/:id', upload.array('images', 6), pCtrl.update);
 router.delete('/products/:id', pCtrl.remove);
 
 // Categories
-router.get   ('/categories',     cCtrl.list);
+// router.get   ('/categories',     cCtrl.list);
+router.get('/categories', cCtrl.adminList);
 router.post  ('/categories',     upload.single('image'), cCtrl.create);
 router.put   ('/categories/:id', upload.single('image'), cCtrl.update);
 router.delete('/categories/:id', cCtrl.remove);

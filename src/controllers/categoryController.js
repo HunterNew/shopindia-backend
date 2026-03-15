@@ -76,3 +76,17 @@ exports.remove = async (req, res) => {
     res.json({ message: 'Category removed' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
+
+
+// GET /api/admin/categories - returns ALL including inactive
+exports.adminList = async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT c.*, COUNT(p.id)::int as product_count
+       FROM categories c
+       LEFT JOIN products p ON c.id=p.category_id AND p.is_active=true
+       GROUP BY c.id ORDER BY c.sort_order, c.name`
+    );
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
