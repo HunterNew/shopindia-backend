@@ -54,19 +54,8 @@ const app = express();
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: function(origin, callback) {
-    const allowed = [
-      process.env.FRONTEND_URL,
-      'http://localhost:3000',
-      'https://shopindia-frontend1.vercel.app'
-    ];
-    if (!origin || allowed.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
+  origin: '*',
+  credentials: false
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
