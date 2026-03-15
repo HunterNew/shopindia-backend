@@ -72,8 +72,19 @@ exports.update = async (req, res) => {
 // DELETE /api/admin/categories/:id
 exports.remove = async (req, res) => {
   try {
-    await pool.query('UPDATE categories SET is_active=false WHERE id=$1', [req.params.id]);
-    res.json({ message: 'Category removed' });
+    // First check if any products use this category
+    const { rows } = await pool.query(
+      'SELECT COUNT(*) FROM products WHERE category_id=$1 AND is_active=true',
+      [req.params.id]
+    );
+    if (Number(rows[0].count) > 0) {
+      return res.status(400).json({
+        error: `Cannot delete — ${rows[0].count} active product(s) use this category. Remove those products first.`
+      });
+    }
+    // Actually delete from database
+    await pool.query('DELETE FROM categories WHERE id=$1', [req.params.id]);
+    res.json({ message: 'Category permanently deleted' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
