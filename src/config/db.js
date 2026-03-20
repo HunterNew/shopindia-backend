@@ -1,9 +1,14 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+const isProduction = process.env.NODE_ENV === 'production' || 
+                     process.env.DATABASE_URL?.includes('supabase') ||
+                     process.env.DATABASE_URL?.includes('render') ||
+                     process.env.DATABASE_URL?.includes('railway');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000
