@@ -76,4 +76,24 @@ router.put('/coupons/:id', async (req, res) => {
   res.json(rows[0]);
 });
 
+// Contact messages
+const contactCtrl = require('../controllers/contactController');
+router.get('/contacts', contactCtrl.adminList);
+router.put('/contacts/:id', contactCtrl.updateStatus);
+
+// GET /api/admin/orders/:id/items
+router.get('/orders/:id/items', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT oi.*, p.slug as product_slug
+       FROM order_items oi
+       LEFT JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = $1
+       ORDER BY oi.id`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
