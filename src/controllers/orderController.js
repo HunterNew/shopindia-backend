@@ -127,7 +127,8 @@ exports.place = async (req, res) => {
     const subtotal    = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
     const hasPhysical = cartItems.some(i => i.product_type === 'physical');
     const shipping_charge = hasPhysical ? (subtotal >= 500 ? 0 : 49) : 0;
-    const gst  = +(subtotal * 0.18).toFixed(2);
+    // const gst  = +(subtotal * 0.18).toFixed(2);
+    const gst  = +0;
     let discount = 0;
 
     // Apply coupon
